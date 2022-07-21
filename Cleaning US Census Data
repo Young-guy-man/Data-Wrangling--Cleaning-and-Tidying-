@@ -1,0 +1,34 @@
+"""Cleaning US Census Data
+Data Cleaning and Tidying"""
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import codecademylib3_seaborn
+import glob
+
+# Merge CSV files
+files = glob.glob("states*.csv")
+
+df_list = []
+for filename in files:
+  data = pd.read_csv(filename)
+  df_list.append(data)
+df = pd.concat(df_list)
+
+print(df.columns)
+print(df.dtypes)
+
+# Data Cleaning and Tidying
+df.Income = df['Income'].replace('[\$,]','', regex = True)
+split_df = df['GenderPop'].str.split('_', expand = True)
+df['Men'] = split_df[0].replace('M','', regex=True)
+df['Women']= split_df[1].replace('F','', regex=True)
+df['Men'] = pd.to_numeric(df['Men'])
+df['Women'] = pd.to_numeric(df['Women'])
+
+df['Women'] = df['Women'].fillna(value={"Women" : df['TotalPop'] - df['Men']})
+new_df = df.drop_duplicates()
+
+plt.scatter(new_df['Women'], new_df['Income'])
+plt.show()
